@@ -20,6 +20,7 @@ public class ExportFileDao implements ExportFileDaoInterface {
 
     @Override
     public void exportData(Map<LocalDate, Map<Integer, Order>> orders) throws PersistenceException {
+        // Go through orders for each date and write to external file
         orders.forEach((orderDate, integerOrderMap) -> {
             allOrders = integerOrderMap.values().stream().toList();
             try {
@@ -58,8 +59,9 @@ public class ExportFileDao implements ExportFileDaoInterface {
 
         try {
             String orderText;
-
+            // For each order, write to file
             for (Order order : allOrders) {
+                // Format order class to text for file
                 orderText = marshallOrder(order, date);
                 out.println(orderText);
                 out.flush();

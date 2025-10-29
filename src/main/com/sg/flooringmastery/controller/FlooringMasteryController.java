@@ -26,6 +26,7 @@ public class FlooringMasteryController {
         this.view = view;
     }
 
+    // Run menu until user selects exit option
     public void run() {
         boolean running = true;
         int userInput;
@@ -85,6 +86,7 @@ public class FlooringMasteryController {
     private void addOrder() throws PersistenceException, NoSuchOrderException {
         view.displayAddOrderBanner();
 
+        // Fetch list of taxes and products
         List<Tax> taxes = service.getTaxes();
         List<Product> products = service.getProducts();
 
@@ -93,6 +95,7 @@ public class FlooringMasteryController {
 
         boolean confirmation = view.getAddOrderConfirmation();
 
+        // Confirm if user wants to place order
         if (confirmation) {
             order.setOrderDate(LocalDate.now());
             order.setOrderNumber(service.getNextOrderNumber());
@@ -107,6 +110,7 @@ public class FlooringMasteryController {
     private void editOrder() throws PersistenceException, NoSuchOrderException {
         view.displayEditOrderBanner();
 
+        // Fetch existing order to edit from date and order number input
         LocalDate date = view.getDateInput();
         int orderNumber = view.getOrderNumberInput();
         Order fetchedOrder = service.getOrder(date, orderNumber);
@@ -125,6 +129,7 @@ public class FlooringMasteryController {
 
             Order order = view.getEditOrderInput(fetchedOrder, taxes, products);
 
+            // Only edit or recalculate order if customer name, state, product type or area changes
             if (!order.getCustomerName().equals(customerName)
             || !order.getState().equals(state)
             || !order.getProductType().equals(productType)
@@ -146,6 +151,7 @@ public class FlooringMasteryController {
         LocalDate date = view.getDateInput();
         int orderNumber = view.getOrderNumberInput();
 
+        // fetch order to remove from date and order number input
         Order fetchedOrder = service.getOrder(date, orderNumber);
 
         if (fetchedOrder == null || fetchedOrder.getCustomerName() == null) {
@@ -164,6 +170,7 @@ public class FlooringMasteryController {
         }
     }
 
+    // export data and all orders to external file
     private void exportData() throws PersistenceException {
         service.exportData();
         view.displayExportDataSuccess();
@@ -178,22 +185,26 @@ public class FlooringMasteryController {
     }
 
     private void calculateOrder(Order order) {
+        // Calculate material cost = area * cost per square foot
         BigDecimal area = order.getArea();
         BigDecimal costPerSquareFoot = order.getCostPerSquareFoot();
         BigDecimal materialCost = area.multiply(costPerSquareFoot);
         materialCost = materialCost.setScale(2, RoundingMode.HALF_EVEN);
         order.setMaterialCost(materialCost);
 
+        // calculate labor cost = area * labor cost per square foot
         BigDecimal laborCostPerSquareFoot = order.getLaborCostPerSquareFoot();
         BigDecimal laborCost = area.multiply(laborCostPerSquareFoot);
         laborCost = laborCost.setScale(2, RoundingMode.HALF_EVEN);
         order.setLaborCost(laborCost);
 
+        // calculate tax = (material cost + labor cost) * (tax rate / 100)
         BigDecimal taxRate = order.getTaxRate();
         BigDecimal tax = materialCost.add(laborCost).multiply(taxRate.divide(new BigDecimal(100)));
         tax = tax.setScale(2, RoundingMode.HALF_EVEN);
         order.setTax(tax);
 
+        // calculate total = material cost + labor cost + tax
         BigDecimal total = materialCost.add(laborCost).add(tax);
         total = total.setScale(2, RoundingMode.HALF_EVEN);
         order.setTotal(total);

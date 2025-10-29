@@ -45,6 +45,7 @@ public class FlooringMasteryView {
             try {
                 date = LocalDate.parse(value, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
+                // Check if date is in the future
                 if (date.isBefore(LocalDate.now().plusDays(1))) {
                     invalidInput = false;
                 }
@@ -118,16 +119,19 @@ public class FlooringMasteryView {
 
         boolean hasErrors = true;
 
+        // Prompt for customer name
         while (hasErrors) {
             String customerName = io.readString("Please enter customer name.");
             customerName = this.validateNameInput(customerName);
 
+            // Customer name can not be empty
             if (!customerName.isEmpty()) {
                 order.setCustomerName(customerName);
                 hasErrors = false;
             }
         }
 
+        // Prompt for state name
         io.printEmptyLine();
         hasErrors = true;
         while (hasErrors) {
@@ -141,9 +145,11 @@ public class FlooringMasteryView {
             }
         }
 
+        // Prompt for product type
         io.printEmptyLine();
         hasErrors = true;
         while (hasErrors) {
+            // Show list of products
             io.printNextLine("*** Products ***");
             for (Product listedProduct : products) {
                 io.printNextLine(listedProduct.getProductType());
@@ -163,6 +169,7 @@ public class FlooringMasteryView {
             }
         }
 
+        // Prompt for area
         io.printEmptyLine();
         hasErrors = true;
         while (hasErrors) {
@@ -204,6 +211,7 @@ public class FlooringMasteryView {
         while (hasErrors) {
             String customerName = io.readString("Please enter customer name. (" + order.getCustomerName() + ")");
 
+            // if customer name is empty, don't update
             if (customerName.isEmpty()) {
                 hasErrors = false;
             }
@@ -221,6 +229,7 @@ public class FlooringMasteryView {
         while (hasErrors) {
             String stateName = io.readString("Please enter state name for tax. (" + order.getState() + ")");
 
+            // if state name is empty, don't update
             if (stateName.isEmpty()) {
                 hasErrors = false;
             }
@@ -237,6 +246,7 @@ public class FlooringMasteryView {
 
         hasErrors = true;
         while (hasErrors) {
+            // Show list of products
             for (Product listedProduct : products) {
                 io.printNextLine(listedProduct.getProductType());
                 io.printNextLine("Cost Per Square Foot: " + listedProduct.getCostPerSquareFoot());
@@ -246,6 +256,7 @@ public class FlooringMasteryView {
 
             String productType = io.readString("Please enter product type. (" + order.getProductType() + ")");
 
+            // if product type is empty, don't update
             if (productType.isEmpty()) {
                 hasErrors = false;
             }
@@ -265,6 +276,7 @@ public class FlooringMasteryView {
         while (hasErrors) {
             String areaInput = io.readString("Please enter area. (" + order.getArea() + ")");
 
+            // if area is empty, don't update
             if (areaInput.isEmpty()) {
                 hasErrors = false;
             }
@@ -336,6 +348,7 @@ public class FlooringMasteryView {
     }
 
     private String validateNameInput(String customerName) {
+        // Check if customer name only has numbers, alphabet, commas and periods
         if (!Pattern.matches("[a-zA-Z0-9,.]+", customerName)) {
             io.printEmptyLine();
             io.printNextLine("Name must be alphanumeric and can include periods and comma characters. Please try again.");
@@ -346,6 +359,7 @@ public class FlooringMasteryView {
     }
 
     private Tax validateStateInput(String stateName, List<Tax> taxes) {
+        // Check if input matches one of the taxes from the list
         List<Tax> fetchedTaxes = taxes.stream().filter(t -> t.getStateName().equals(stateName)).toList();
 
         if (fetchedTaxes.isEmpty()) {
@@ -360,6 +374,7 @@ public class FlooringMasteryView {
     }
 
     private Product validateProductInput(String productType, List<Product> products) {
+        // Check if input matches one of the product types from the list
         List<Product> fetchedProducts = products.stream().filter(p -> p.getProductType().equals(productType)).toList();
 
         if (fetchedProducts.isEmpty()) {
@@ -374,6 +389,7 @@ public class FlooringMasteryView {
     }
 
     private BigDecimal validateAreaInput(String areaInput) {
+        // check if area input is a number
         if (!areaInput.matches("[0-9.]+")) {
             io.printEmptyLine();
             io.printNextLine("Area must be a number. Please try again.");
@@ -383,6 +399,7 @@ public class FlooringMasteryView {
 
         BigDecimal area = new BigDecimal(Double.parseDouble(areaInput));
 
+        // check if area is positive and at least 100
         if (area.compareTo(new BigDecimal(100)) < 0) {
             io.printEmptyLine();
             io.printNextLine("Area must be positive and at least 100 sq ft. Please try again.");

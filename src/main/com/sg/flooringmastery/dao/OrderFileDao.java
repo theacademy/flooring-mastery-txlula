@@ -36,6 +36,7 @@ public class OrderFileDao implements OrderFileDaoInterface {
         PrintWriter out;
         String date = orderDate.format(DateTimeFormatter.ofPattern("MMddyyyy"));
 
+        // write to file with date
         try {
             out = new PrintWriter(new FileWriter("data/Orders_" + date + ".txt"));
         } catch (IOException e) {
@@ -47,6 +48,7 @@ public class OrderFileDao implements OrderFileDaoInterface {
             List<Order> orders = this.getOrdersForDate(orderDate);
 
             for (Order order : orders) {
+                // Format order class to text to write to file
                 orderText = marshallOrder(order);
                 out.println(orderText);
                 out.flush();
@@ -58,6 +60,7 @@ public class OrderFileDao implements OrderFileDaoInterface {
         out.close();
     }
 
+    // format file text of each line to create a new Order class
     private Order unmarshallOrder(String orderText) {
         String[] orderTokens = orderText.split(DELIMITER);
         Order order = new Order();
@@ -116,10 +119,12 @@ public class OrderFileDao implements OrderFileDaoInterface {
             Order currentOrder = unmarshallOrder(currentLine);
             currentOrder.setOrderDate(orderDate);
 
+            // if date exists as a key on Hashmap, create new Order Hashmap for that date
             if (orders.get(currentOrder.getOrderDate()) != null) {
                 orders.get(currentOrder.getOrderDate()).put(currentOrder.getOrderNumber(), currentOrder);
             }
             else {
+                // if date does not exist as a key on Hashmap, create new Hashmap for that date and new Order Hashmap
                 orders.put(currentOrder.getOrderDate(), new HashMap<>() {{
                     put(currentOrder.getOrderNumber(), currentOrder);
                 }});
@@ -133,6 +138,7 @@ public class OrderFileDao implements OrderFileDaoInterface {
     public int getNextOrderNumber() throws PersistenceException, NoSuchOrderException {
         List<Order> orders = this.getOrdersForDate(LocalDate.now());
         if (!orders.isEmpty()) {
+            // Based on number of orders in file, get largest order number
             Order order = orders.get(orders.size() - 1);
             largestOrderNumber = order.getOrderNumber() + 1;
         }
@@ -141,12 +147,15 @@ public class OrderFileDao implements OrderFileDaoInterface {
 
     @Override
     public Order addOrder(Order order) throws PersistenceException {
+        // Check if file exists for the date
         this.validateFile(order.getOrderDate());
 
+        // if date exists as a key on Hashmap, create new Order Hashmap for that date
         if (orders.get(order.getOrderDate()) != null) {
             orders.get(order.getOrderDate()).put(order.getOrderNumber(), order);
         }
         else {
+            // if date does not exist as a key on Hashmap, create new Hashmap for that date and new Order Hashmap
             orders.put(order.getOrderDate(), new HashMap<>() {{
                 put(order.getOrderNumber(), order);
             }});
@@ -161,8 +170,10 @@ public class OrderFileDao implements OrderFileDaoInterface {
 
     @Override
     public Order getOrder(LocalDate date, int orderNumber) throws PersistenceException, NoSuchOrderException {
+        // check if file exists for the date
         this.validateFile(date);
 
+        // check if order exists
         try {
             if (orders.get(date) != null) {
                 return orders.get(date).get(orderNumber);
@@ -176,13 +187,16 @@ public class OrderFileDao implements OrderFileDaoInterface {
 
     @Override
     public Order editOrder(LocalDate date, int orderNumber, Order order) throws PersistenceException, NoSuchOrderException {
+        // check if file exists for the date
         this.validateFile(date);
 
         try {
+            // if date exists as a key on Hashmap, update Order Hashmap for that date
             if (orders.get(order.getOrderDate()) != null) {
                 orders.get(order.getOrderDate()).put(order.getOrderNumber(), order);
             }
             else {
+                // if date does not exist as a key on Hashmap, create new Hashmap for that date and update Order Hashmap
                 orders.put(order.getOrderDate(), new HashMap<>() {{
                     put(order.getOrderNumber(), order);
                 }});
@@ -204,6 +218,7 @@ public class OrderFileDao implements OrderFileDaoInterface {
     public List<Order> getOrdersForDate(LocalDate date) throws PersistenceException, NoSuchOrderException {
         this.validateFile(date);
 
+        // Check if orders exist for the date
         try {
             if (orders.get(date) != null) {
                 return orders.get(date).values().stream().toList();
@@ -218,6 +233,7 @@ public class OrderFileDao implements OrderFileDaoInterface {
     public Order removeOrder(LocalDate date, int orderNumber) throws PersistenceException, NoSuchOrderException {
         this.validateFile(date);
 
+        // Check if order exists to be removed
         try {
             Order order = orders.get(date).remove(orderNumber);
             writeToFile(date);
@@ -231,6 +247,7 @@ public class OrderFileDao implements OrderFileDaoInterface {
         String dateString = date.format(DateTimeFormatter.ofPattern("MMddyyyy"));
         File file = new File("data/Orders_" + dateString + ".txt");
 
+        // Check if file exists for the date
         if (file.isFile()) {
             loadFromFile(date);
         }

@@ -16,6 +16,7 @@ public class AuditFileDao implements AuditFileDaoInterface {
     public void writeAuditEntry(String entry) throws PersistenceException {
         PrintWriter out;
 
+        // Write changes to system to audit file with timestamp
         try {
             out = new PrintWriter(new FileWriter(AUDIT_FILE, true));
         }
