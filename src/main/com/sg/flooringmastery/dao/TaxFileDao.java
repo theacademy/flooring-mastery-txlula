@@ -2,6 +2,7 @@ package com.sg.flooringmastery.dao;
 
 import com.sg.flooringmastery.exceptions.PersistenceException;
 import com.sg.flooringmastery.model.Tax;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -12,9 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+@Component
 public class TaxFileDao implements TaxFileDaoInterface {
     private Map<String, Tax> allTaxes = new HashMap<>();
-    private static final String TAX_FILE = "taxes.txt";
+    private static final String TAX_FILE = "data/taxes.txt";
     private static final String DELIMITER = ",";
 
     @Override
@@ -28,7 +30,7 @@ public class TaxFileDao implements TaxFileDaoInterface {
         Tax tax = new Tax();
         tax.setStateAbbreviation(taxTokens[0]);
         tax.setStateName(taxTokens[1]);
-        tax.setTaxRate(BigDecimal.valueOf(Integer.parseInt(taxTokens[2])));
+        tax.setTaxRate(BigDecimal.valueOf(Double.parseDouble(taxTokens[2])));
         return tax;
     }
 

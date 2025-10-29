@@ -2,7 +2,6 @@ package com.sg.flooringmastery;
 
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.Scanner;
 
 @Component

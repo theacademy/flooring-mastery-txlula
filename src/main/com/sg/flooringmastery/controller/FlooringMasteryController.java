@@ -1,5 +1,6 @@
 package com.sg.flooringmastery.controller;
 
+import com.sg.flooringmastery.exceptions.NoSuchOrderException;
 import com.sg.flooringmastery.exceptions.PersistenceException;
 import com.sg.flooringmastery.model.Order;
 import com.sg.flooringmastery.model.Product;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -28,8 +30,8 @@ public class FlooringMasteryController {
         boolean running = true;
         int userInput = 0;
 
-        try {
-            while (running) {
+        while (running) {
+            try {
                 userInput = getMenuSelection();
 
                 switch (userInput) {
@@ -56,25 +58,31 @@ public class FlooringMasteryController {
                         break;
                 }
             }
+            catch (PersistenceException | NoSuchOrderException e) {
+                view.displayErrorMessage(e.getMessage());
+            }
+        }
 
-            exitMessage();
-        }
-        catch (PersistenceException e) {
-            view.displayErrorMessage(e.getMessage());
-        }
+        exitMessage();
     }
 
     private int getMenuSelection() {
         return view.displayMenuAndGetSelection();
     }
 
-    private void displayOrders() throws PersistenceException {
+    private void displayOrders() throws PersistenceException, NoSuchOrderException {
         LocalDate date = view.getDateInput();
         List<Order> orders = service.getOrdersForDate(date);
-        view.displayOrders(date, orders);
+
+        if (!orders.isEmpty()) {
+            view.displayOrders(date, orders);
+        }
+        else {
+            view.displayNoOrders();
+        }
     }
 
-    private void addOrder() throws PersistenceException {
+    private void addOrder() throws PersistenceException, NoSuchOrderException {
         view.displayAddOrderBanner();
 
         List<Tax> taxes = service.getTaxes();
@@ -86,6 +94,8 @@ public class FlooringMasteryController {
         boolean confirmation = view.getAddOrderConfirmation();
 
         if (confirmation) {
+            order.setOrderDate(LocalDate.now());
+            order.setOrderNumber(service.getNextOrderNumber());
             Order addedOrder = service.addOrder(order);
 
             if (addedOrder != null) {
@@ -94,25 +104,33 @@ public class FlooringMasteryController {
         }
     }
 
-    private void editOrder() throws PersistenceException {
+    private void editOrder() throws PersistenceException, NoSuchOrderException {
         view.displayEditOrderBanner();
 
         LocalDate date = view.getDateInput();
         int orderNumber = view.getOrderNumberInput();
         Order fetchedOrder = service.getOrder(date, orderNumber);
 
-        if (fetchedOrder == null) {
+        if (fetchedOrder.getCustomerName() == null) {
             view.displayErrorMessage("Could not find order from information provided. Please try again.");
         }
         else {
+            String customerName = fetchedOrder.getCustomerName();
+            String state = fetchedOrder.getState();
+            String productType = fetchedOrder.getProductType();
+            BigDecimal area = fetchedOrder.getArea();
+
             List<Tax> taxes = service.getTaxes();
             List<Product> products = service.getProducts();
 
             Order order = view.getEditOrderInput(fetchedOrder, taxes, products);
-            if (!order.getCustomerName().equals(fetchedOrder.getCustomerName())
-            || !order.getState().equals(fetchedOrder.getState())
-            || !order.getProductType().equals(fetchedOrder.getProductType())
-            || !order.getArea().equals(fetchedOrder.getArea())) {
+
+            if (!order.getCustomerName().equals(customerName)
+            || !order.getState().equals(state)
+            || !order.getProductType().equals(productType)
+            || !order.getArea().equals(area)) {
+                this.calculateOrder(order);
+
                 Order editedOrder = service.editOrder(date, orderNumber, order);
 
                 if (editedOrder != null) {
@@ -122,19 +140,26 @@ public class FlooringMasteryController {
         }
     }
 
-    private void removeOrder() throws PersistenceException {
+    private void removeOrder() throws PersistenceException, NoSuchOrderException {
         view.displayRemoveOrderBanner();
 
         LocalDate date = view.getDateInput();
         int orderNumber = view.getOrderNumberInput();
 
-        boolean confirmation = view.getRemoveOrderConfirmation();
+        Order fetchedOrder = service.getOrder(date, orderNumber);
 
-        if (confirmation) {
-            Order fetchedOrder = service.removeOrder(date, orderNumber);
+        if (fetchedOrder == null || fetchedOrder.getCustomerName() == null) {
+            view.displayErrorMessage("Could not find order from information provided. Please try again.");
+        }
+        else {
+            boolean confirmation = view.getRemoveOrderConfirmation();
 
-            if (fetchedOrder != null) {
-                view.displayRemoveOrderSuccess();
+            if (confirmation) {
+                Order removedOrder = service.removeOrder(date, orderNumber);
+
+                if (removedOrder != null) {
+                    view.displayRemoveOrderSuccess();
+                }
             }
         }
     }
@@ -155,17 +180,21 @@ public class FlooringMasteryController {
         BigDecimal area = order.getArea();
         BigDecimal costPerSquareFoot = order.getCostPerSquareFoot();
         BigDecimal materialCost = area.multiply(costPerSquareFoot);
+        materialCost = materialCost.setScale(2, RoundingMode.HALF_EVEN);
         order.setMaterialCost(materialCost);
 
         BigDecimal laborCostPerSquareFoot = order.getLaborCostPerSquareFoot();
         BigDecimal laborCost = area.multiply(laborCostPerSquareFoot);
+        laborCost = laborCost.setScale(2, RoundingMode.HALF_EVEN);
         order.setLaborCost(laborCost);
 
         BigDecimal taxRate = order.getTaxRate();
         BigDecimal tax = materialCost.add(laborCost).multiply(taxRate.divide(new BigDecimal(100)));
+        tax = tax.setScale(2, RoundingMode.HALF_EVEN);
         order.setTax(tax);
 
         BigDecimal total = materialCost.add(laborCost).add(tax);
+        total = total.setScale(2, RoundingMode.HALF_EVEN);
         order.setTotal(total);
     }
 }

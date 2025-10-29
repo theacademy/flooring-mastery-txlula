@@ -2,6 +2,7 @@ package com.sg.flooringmastery.dao;
 
 import com.sg.flooringmastery.exceptions.PersistenceException;
 import com.sg.flooringmastery.model.Product;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -12,9 +13,10 @@ import java.util.Map;
 import java.util.List;
 import java.util.Scanner;
 
+@Component
 public class ProductFileDao implements ProductFileDaoInterface {
     private final Map<String, Product> allProducts = new HashMap<>();
-    private static final String PRODUCT_FILE = "taxes.txt";
+    private static final String PRODUCT_FILE = "data/products.txt";
     private static final String DELIMITER = ",";
 
     @Override
@@ -27,8 +29,8 @@ public class ProductFileDao implements ProductFileDaoInterface {
         String[] productTokens = productString.split(DELIMITER);
         Product product = new Product();
         product.setProductType(productTokens[0]);
-        product.setCostPerSquareFoot(BigDecimal.valueOf(Integer.parseInt(productTokens[1])));
-        product.setLaborCostPerSquareFoot(BigDecimal.valueOf(Integer.parseInt(productTokens[2])));
+        product.setCostPerSquareFoot(BigDecimal.valueOf(Double.parseDouble(productTokens[1])));
+        product.setLaborCostPerSquareFoot(BigDecimal.valueOf(Double.parseDouble(productTokens[2])));
         return product;
     }
 

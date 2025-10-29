@@ -4,12 +4,13 @@
     <groupId>com.sg</groupId>
     <artifactId>FlooringMastery</artifactId>
     <version>0.1</version>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>5.2.2.RELEASE</version>
+            <version>6.2.7</version>
         </dependency>
     </dependencies>
     <build>
