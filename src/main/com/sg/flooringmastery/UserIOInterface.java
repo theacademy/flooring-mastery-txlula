@@ -1,7 +1,5 @@
 package com.sg.flooringmastery;
 
-import java.math.BigDecimal;
-
 public interface UserIOInterface {
     void printEmptyLine();
     void printNextLine(String message);

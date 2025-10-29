@@ -5,7 +5,7 @@ import com.sg.flooringmastery.exceptions.PersistenceException;
 import com.sg.flooringmastery.model.Order;
 import com.sg.flooringmastery.model.Product;
 import com.sg.flooringmastery.model.Tax;
-import com.sg.flooringmastery.service.FlooringMasteryService;
+import com.sg.flooringmastery.service.FlooringMasteryServiceInterface;
 import com.sg.flooringmastery.view.FlooringMasteryView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,18 +17,18 @@ import java.util.List;
 
 @Component
 public class FlooringMasteryController {
-    private final FlooringMasteryService service;
+    private final FlooringMasteryServiceInterface service;
     private final FlooringMasteryView view;
 
     @Autowired
-    public FlooringMasteryController(FlooringMasteryService service, FlooringMasteryView view) {
+    public FlooringMasteryController(FlooringMasteryServiceInterface service, FlooringMasteryView view) {
         this.service = service;
         this.view = view;
     }
 
     public void run() {
         boolean running = true;
-        int userInput = 0;
+        int userInput;
 
         while (running) {
             try {

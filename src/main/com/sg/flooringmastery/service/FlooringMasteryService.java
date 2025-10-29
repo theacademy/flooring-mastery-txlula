@@ -10,19 +10,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
 @Component
 public class FlooringMasteryService implements FlooringMasteryServiceInterface {
-    private OrderFileDao orderFileDao;
-    private AuditFileDao auditFileDao;
-    private ProductFileDao productFileDao;
-    private TaxFileDao taxFileDao;
-    private ExportFileDao exportFileDao;
+    private final OrderFileDaoInterface orderFileDao;
+    private final AuditFileDaoInterface auditFileDao;
+    private final ProductFileDaoInterface productFileDao;
+    private final TaxFileDaoInterface taxFileDao;
+    private final ExportFileDaoInterface exportFileDao;
 
     @Autowired
-    public FlooringMasteryService(OrderFileDao orderFileDao, AuditFileDao auditFileDao, ProductFileDao productFileDao, TaxFileDao taxFileDao, ExportFileDao exportFileDao) {
+    public FlooringMasteryService(OrderFileDaoInterface orderFileDao, AuditFileDaoInterface auditFileDao, ProductFileDaoInterface productFileDao, TaxFileDaoInterface taxFileDao, ExportFileDaoInterface exportFileDao) {
         this.orderFileDao = orderFileDao;
         this.auditFileDao = auditFileDao;
         this.productFileDao = productFileDao;
@@ -65,6 +66,7 @@ public class FlooringMasteryService implements FlooringMasteryServiceInterface {
 
     @Override
     public void exportData() throws PersistenceException {
+        auditFileDao.writeAuditEntry("EXPORTED DATA " + LocalDate.now().format(DateTimeFormatter.ofPattern("MM-dd-yyyy")));
         Map<LocalDate, Map<Integer, Order>> orders = orderFileDao.getAllOrders();
         exportFileDao.exportData(orders);
     }
