@@ -33,7 +33,8 @@ public interface FlooringMasteryServiceInterface {
             throws PersistenceException,
             NoSuchOrderException;
 
-    void exportData();
+    void exportData()
+            throws PersistenceException;
 
     List<Tax> getTaxes()
         throws PersistenceException;

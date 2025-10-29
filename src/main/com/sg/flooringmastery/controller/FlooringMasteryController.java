@@ -165,7 +165,8 @@ public class FlooringMasteryController {
     }
 
     private void exportData() throws PersistenceException {
-
+        service.exportData();
+        view.displayExportDataSuccess();
     }
 
     private void exitMessage() {

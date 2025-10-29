@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class FlooringMasteryService implements FlooringMasteryServiceInterface {
@@ -63,8 +64,9 @@ public class FlooringMasteryService implements FlooringMasteryServiceInterface {
     }
 
     @Override
-    public void exportData() {
-//        exportFileDao.exportData();
+    public void exportData() throws PersistenceException {
+        Map<LocalDate, Map<Integer, Order>> orders = orderFileDao.getAllOrders();
+        exportFileDao.exportData(orders);
     }
 
     @Override

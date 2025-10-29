@@ -6,6 +6,7 @@ import com.sg.flooringmastery.model.Order;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface OrderFileDaoInterface {
     int getNextOrderNumber()
@@ -22,6 +23,9 @@ public interface OrderFileDaoInterface {
     Order removeOrder(LocalDate date, int orderNumber)
             throws PersistenceException,
             NoSuchOrderException;
+
+    Map<LocalDate, Map<Integer, Order>> getAllOrders()
+            throws PersistenceException;
 
     List<Order> getOrdersForDate(LocalDate date)
             throws PersistenceException,

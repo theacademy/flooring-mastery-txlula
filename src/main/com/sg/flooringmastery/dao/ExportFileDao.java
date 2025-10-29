@@ -20,10 +20,54 @@ public class ExportFileDao implements ExportFileDaoInterface {
 
     @Override
     public void exportData(Map<LocalDate, Map<Integer, Order>> orders) throws PersistenceException {
-
+        orders.forEach((orderDate, integerOrderMap) -> {
+            allOrders = integerOrderMap.values().stream().toList();
+            try {
+                writeToFile(orderDate);
+            } catch (PersistenceException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
-    private void writeToFile() throws PersistenceException {
+    private String marshallOrder(Order order, String date) {
+        return order.getOrderNumber() + DELIMITER
+                + order.getCustomerName() + DELIMITER
+                + order.getState() + DELIMITER
+                + order.getTaxRate() + DELIMITER
+                + order.getProductType() + DELIMITER
+                + order.getArea() + DELIMITER
+                + order.getCostPerSquareFoot() + DELIMITER
+                + order.getLaborCostPerSquareFoot() + DELIMITER
+                + order.getMaterialCost() + DELIMITER
+                + order.getLaborCost() + DELIMITER
+                + order.getTax() + DELIMITER
+                + order.getTotal() + DELIMITER
+                + date;
+    }
 
+    private void writeToFile(LocalDate orderDate) throws PersistenceException {
+        PrintWriter out;
+        String date = orderDate.format(DateTimeFormatter.ofPattern("MM-dd-yyyy"));
+
+        try {
+            out = new PrintWriter(new FileWriter(EXPORT_FILE));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            String orderText;
+
+            for (Order order : allOrders) {
+                orderText = marshallOrder(order, date);
+                out.println(orderText);
+                out.flush();
+            }
+        } catch (Exception e) {
+            throw new PersistenceException("Error: Cannot get orders to write to file.", e);
+        }
+
+        out.close();
     }
 }

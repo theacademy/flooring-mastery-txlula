@@ -37,7 +37,7 @@ public class OrderFileDao implements OrderFileDaoInterface {
         String date = orderDate.format(DateTimeFormatter.ofPattern("MMddyyyy"));
 
         try {
-            out = new PrintWriter(new FileWriter("data/Orders_" + date));
+            out = new PrintWriter(new FileWriter("data/Orders_" + date + ".txt"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -106,7 +106,7 @@ public class OrderFileDao implements OrderFileDaoInterface {
         String date = orderDate.format(DateTimeFormatter.ofPattern("MMddyyyy"));
 
         try {
-            scanner = new Scanner(new BufferedReader(new FileReader("data/Orders_" + date)));
+            scanner = new Scanner(new BufferedReader(new FileReader("data/Orders_" + date + ".txt")));
         } catch (FileNotFoundException e) {
             throw new PersistenceException("Error: could not load from file / no orders on that date.");
         }
@@ -196,6 +196,11 @@ public class OrderFileDao implements OrderFileDaoInterface {
     }
 
     @Override
+    public Map<LocalDate, Map<Integer, Order>> getAllOrders() throws PersistenceException {
+        return orders;
+    }
+
+    @Override
     public List<Order> getOrdersForDate(LocalDate date) throws PersistenceException, NoSuchOrderException {
         this.validateFile(date);
 
@@ -224,7 +229,7 @@ public class OrderFileDao implements OrderFileDaoInterface {
 
     private void validateFile(LocalDate date) throws PersistenceException {
         String dateString = date.format(DateTimeFormatter.ofPattern("MMddyyyy"));
-        File file = new File("data/Orders_" + dateString);
+        File file = new File("data/Orders_" + dateString + ".txt");
 
         if (file.isFile()) {
             loadFromFile(date);
